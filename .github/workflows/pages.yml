@@ -22,7 +22,7 @@ jobs:
           MC3_SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}
         run: make web-pages PAGES_DIR="$RUNNER_TEMP/mc3-pages"
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/mc3-pages
 
@@ -38,4 +38,4 @@ jobs:
     steps:
       - name: Deploy to Pages
         id: pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
