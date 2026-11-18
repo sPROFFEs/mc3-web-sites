@@ -1,0 +1,10 @@
+const sections = [...document.querySelectorAll('main > article[lang]')];
+const languages = sections.map(section => section.lang);
+const url = new URL(location.href);
+const requested = url.searchParams.get('lang');
+const browserLanguage = navigator.language.split('-')[0];
+const language = [requested, browserLanguage, 'en'].find(code => languages.includes(code));
+for (const section of sections) section.hidden = section.lang !== language;
+document.documentElement.lang = language;
+document.title = sections.find(section => section.lang === language).querySelector('h1').textContent + ' · MC3';
+document.querySelector(`nav a[hreflang="${language}"]`).setAttribute('aria-current', 'page');

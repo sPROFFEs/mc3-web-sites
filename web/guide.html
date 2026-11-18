@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Setup guide · MC3</title>
+<style>
+  :root { color-scheme: dark; background: #08080b; color: #f4f4f6; font: 16px/1.55 system-ui, sans-serif; }
+  body { max-width: 48rem; margin: auto; padding: 1.25rem; }
+  nav { display: flex; flex-wrap: wrap; gap: .45rem; }
+  nav a, .play { border: 1px solid #45454f; padding: .4rem .7rem; color: #fff; text-decoration: none; }
+  nav a[aria-current], .play { background: #aa1826; border-color: #e5262f; }
+  h1 { line-height: 1.15; margin-top: 1.5rem; }
+  h2 { margin-top: 2rem; }
+  a { color: #ff8994; }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  pre { padding: .9rem; overflow: auto; background: #15151d; border-left: 3px solid #b51d2b; }
+  code { overflow-wrap: anywhere; }
+  pre code { overflow-wrap: normal; }
+</style>
+<script defer src="guide.js"></script>
+</head>
+<body>
+<nav aria-label="Language · Sprache · Langue · Idioma">
+  <a href="?lang=en" lang="en" hreflang="en">English</a>
+  <a href="?lang=de" lang="de" hreflang="de">Deutsch</a>
+  <a href="?lang=fr" lang="fr" hreflang="fr">Français</a>
+  <a href="?lang=es" lang="es" hreflang="es">Español</a>
+</nav>
+<main>
+<article lang="en">
+  <h1>Play Midnight Club 3 on your PC</h1>
+  <p>GitHub Pages hosts the single-player launcher. Chrome uses your own Xbox disc files and the matching browser build from your computer. The launcher interface is in English. The game's languages depend on your disc.</p>
+  <p><b>To prepare the files once:</b> Ubuntu 24.04 or Windows with WSL 2, with about 25 GB free for the SDK, disc copy and build. <b>To play:</b> recent desktop Chrome with WebAssembly threads and SIMD, WebGL 2, and enough memory. If you already have the prepared files, go to step 4.</p>
+  <p><a class="play" href="./">Back to the launcher</a></p>
+
+  <h2>1. Copy your own Xbox disc</h2>
+  <p>Use the original Xbox release of <i>DUB Edition Remix</i> (Europe or USA). The original <i>DUB Edition</i> for Xbox (Europe or USA) also works. A standard PC DVD drive usually sees only the video partition.</p>
+  <ol>
+    <li>If you already have your own full ISO or XISO backup, keep it. Step 3 extracts it.</li>
+    <li>If you have the physical disc and an original Xbox with an FTP-enabled custom dashboard, insert the disc and open that dashboard. Connect the Xbox and PC to your home network. In an FTP client on your PC, enter the Xbox IP shown on the dashboard and its FTP credentials, open the DVD drive <code>D:</code> and copy its entire contents. The copied folder should contain <code>default.xbe</code> at its top level.</li>
+    <li>You can also make a full ISO with a compatible reflashed DVD drive. See <a href="https://xemu.app/docs/disc-images/#backing-up-your-games">xemu's original Xbox disc backup guide</a>.</li>
+  </ol>
+
+  <h2>2. Set up Ubuntu and Emscripten</h2>
+  <p>On Windows 10 or 11, open PowerShell as administrator and run the following command. Restart if prompted, open Ubuntu 24.04 from Start and create your Ubuntu username and password. On Ubuntu, go straight to the next command block. <a href="https://learn.microsoft.com/windows/wsl/install">Microsoft WSL guide</a></p>
+  <pre><code>wsl --install -d Ubuntu-24.04</code></pre>
+  <p>Run these commands in the Ubuntu terminal. Keep the checkout under your Ubuntu home directory.</p>
+  <pre><code>sudo apt update
+sudo apt install -y git make
+cd ~
+git clone https://github.com/sPROFFEs/mc3-web-sites.git
+cd mc3-web-sites
+make setup GAME=remix
+
+git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+cd ~/emsdk
+./emsdk install latest
+./emsdk activate latest
+source ~/emsdk/emsdk_env.sh
+cd ~/mc3-web-sites</code></pre>
+  <p>For the original DUB Edition, use <code>GAME=dub</code> in every <code>make</code> command. <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten SDK installation</a></p>
+
+  <h2>3. Extract and build</h2>
+  <p>If you have an ISO, copy it to your Ubuntu home folder as <code>mc3.iso</code> and run the first command below. On Windows, run <code>cd ~ &amp;&amp; explorer.exe .</code> in Ubuntu to open that folder, then return to the project with <code>cd ~/mc3-web-sites</code>. If you already copied the extracted files, put them in <code>game-remix/</code> inside the project so that <code>game-remix/default.xbe</code> exists. In that case, start at <code>make lift</code>.</p>
+  <pre><code>make extract GAME=remix ISO="$HOME/mc3.iso"
+make lift GAME=remix
+make web GAME=remix</code></pre>
+  <p>The first conversion and compilation can take several minutes. The Remix produces <code>mcdub3remix.js</code> and <code>mcdub3remix.wasm</code> in <code>work-remix/build-web/</code>. DUB uses the disc folder <code>game/</code> and produces <code>mcdub3.js</code> and <code>mcdub3.wasm</code> in <code>work-dub/build-web/</code>.</p>
+
+  <h2>4. Open the game</h2>
+  <p>To play on another computer, copy the extracted disc folder and the matching <code>.js</code>, <code>.wasm</code> and optional <code>.worker.js</code>. You can transfer them in a ZIP. Unzip it on the destination computer and use Chrome there. This works with the same build on compatible Windows, macOS and Linux desktops, with no recompilation or WSL on the destination.</p>
+  <ol>
+    <li>Return to the launcher in desktop Chrome. The first visit reloads once to enable WebAssembly threads.</li>
+    <li>Click <b>Choose build files</b> and select both the <code>.js</code> and <code>.wasm</code> files together. Include the matching <code>.worker.js</code> if the build created one.</li>
+    <li>Click <b>Choose disc folder</b>, select <code>game-remix/</code> or <code>game/</code>, approve Chrome's folder access and press <b>Play</b>. Select both inputs again after reloading. On Windows, run <code>explorer.exe .</code> from the project folder to locate the files. If the Chrome picker cannot open the WSL path, copy the files and disc folder to a normal Windows folder first. <a href="https://learn.microsoft.com/windows/wsl/filesystems">Find WSL files in Windows Explorer</a></li>
+  </ol>
+  <p>Click the game to give it keyboard focus. Enter is Start, the arrow keys drive and Space is the handbrake. The <b>Controls</b> tab has the full layout.</p>
+
+  <h2>5. Save and back up your progress</h2>
+  <p>Save inside the game. Progress is kept in Chrome's private storage for this site and Chrome profile. It survives reloads. Use <b>Saves → Back up to folder</b> to write a dated ZIP to <code>mc3-saves-backup/</code> in a folder you choose, including the extracted game folder. Click it whenever you want a fresh copy. <b>Export all saves</b> downloads a ZIP if Chrome cannot write to your chosen folder.</p>
+  <p>To restore a profile, unzip the backup and use <b>Saves → Import save</b> with the <code>.mc3Remix</code> or <code>.mc3</code> file under <code>UDATA/</code> before pressing Play. Clearing site data removes Chrome's copy, so keep a separate ZIP.</p>
+
+  <h2>If you get stuck</h2>
+  <ul>
+    <li>Missing <code>default.xbe</code> means the wrong folder was selected or the copy is incomplete. Select the folder containing that file and all the disc data.</li>
+    <li>If the build or disc is rejected, check the game edition and use the unmodified <code>default.xbe</code> from your own compatible Xbox disc. If <code>emcc</code> is missing, run <code>source ~/emsdk/emsdk_env.sh</code> in the current terminal.</li>
+    <li>If WebAssembly threads are unavailable, open the launcher directly in an up-to-date desktop Chrome window and reload normally.</li>
+  </ul>
+</article>
+
+<article lang="de" hidden>
+  <h1>Midnight Club 3 auf dem PC spielen</h1>
+  <p>GitHub Pages stellt den Einzelspieler-Launcher bereit. Chrome verwendet die Dateien deiner eigenen Xbox-Disc und die passende Browser-Version auf deinem Computer. Der Launcher ist auf Englisch. Die Spielsprachen hängen von deiner Disc ab.</p>
+  <p><b>Für die einmalige Vorbereitung:</b> Ubuntu 24.04 oder Windows mit WSL 2 und etwa 25 GB freier Platz für SDK, Disc-Kopie und Build. <b>Zum Spielen:</b> ein aktueller Desktop-Chrome mit WebAssembly-Threads und SIMD, WebGL 2 und ausreichend Arbeitsspeicher. Hast du die fertigen Dateien schon, gehe zu Schritt 4.</p>
+  <p><a class="play" href="./">Zurück zum Launcher</a></p>
+
+  <h2>1. Die eigene Xbox-Disc kopieren</h2>
+  <p>Verwende <i>DUB Edition Remix</i> für die erste Xbox (Europa oder USA). Auch die ursprüngliche <i>DUB Edition</i> für Xbox (Europa oder USA) wird unterstützt. Ein gewöhnliches PC-DVD-Laufwerk sieht meist nur die Videopartition.</p>
+  <ol>
+    <li>Hast du bereits eine eigene vollständige ISO- oder XISO-Sicherung, verwende sie in Schritt 3.</li>
+    <li>Wenn du die Disc und eine Xbox mit einem FTP-fähigen alternativen Dashboard hast, lege die Disc ein und öffne das Dashboard. Verbinde Xbox und PC mit deinem Heimnetz. Gib im FTP-Programm auf dem PC die Xbox-IP aus dem Dashboard und dessen FTP-Zugangsdaten ein. Öffne das DVD-Laufwerk <code>D:</code> und kopiere den gesamten Inhalt. Die Datei <code>default.xbe</code> muss direkt im kopierten Ordner liegen.</li>
+    <li>Mit einem kompatiblen DVD-Laufwerk mit angepasster Firmware kannst du eine vollständige ISO erstellen. <a href="https://xemu.app/docs/disc-images/#backing-up-your-games">Xbox-Discs sichern (xemu, Englisch)</a></li>
+  </ol>
+
+  <h2>2. Ubuntu und Emscripten einrichten</h2>
+  <p>Öffne unter Windows 10 oder 11 die PowerShell als Administrator. Führe den folgenden Befehl aus, starte Windows bei Aufforderung neu und öffne Ubuntu 24.04 im Startmenü. Lege deinen Ubuntu-Benutzernamen und dein Passwort an. Unter Ubuntu kannst du direkt mit dem nächsten Befehlsblock beginnen. <a href="https://learn.microsoft.com/de-de/windows/wsl/install">WSL-Anleitung von Microsoft</a></p>
+  <pre><code>wsl --install -d Ubuntu-24.04</code></pre>
+  <p>Führe diese Befehle im Ubuntu-Terminal aus. Lege das Projekt in deinem Ubuntu-Heimverzeichnis ab.</p>
+  <pre><code>sudo apt update
+sudo apt install -y git make
+cd ~
+git clone https://github.com/sPROFFEs/mc3-web-sites.git
+cd mc3-web-sites
+make setup GAME=remix
+
+git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+cd ~/emsdk
+./emsdk install latest
+./emsdk activate latest
+source ~/emsdk/emsdk_env.sh
+cd ~/mc3-web-sites</code></pre>
+  <p>Für die ursprüngliche DUB Edition ersetze <code>GAME=remix</code> in allen <code>make</code>-Befehlen durch <code>GAME=dub</code>. <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten-SDK installieren (Englisch)</a></p>
+
+  <h2>3. Disc entpacken und Spiel kompilieren</h2>
+  <p>Kopiere deine ISO als <code>mc3.iso</code> in dein Ubuntu-Heimverzeichnis und führe den ersten Befehl unten aus. Unter Windows öffnet <code>cd ~ &amp;&amp; explorer.exe .</code> den Ordner im Explorer. Wechsle danach mit <code>cd ~/mc3-web-sites</code> zurück ins Projekt. Wenn du die Disc schon als Dateien kopiert hast, lege sie im Projekt unter <code>game-remix/</code> ab. Prüfe, ob <code>game-remix/default.xbe</code> vorhanden ist, und beginne mit <code>make lift</code>.</p>
+  <pre><code>make extract GAME=remix ISO="$HOME/mc3.iso"
+make lift GAME=remix
+make web GAME=remix</code></pre>
+  <p>Die erste Konvertierung und Kompilierung kann mehrere Minuten dauern. Remix erzeugt <code>mcdub3remix.js</code> und <code>mcdub3remix.wasm</code> in <code>work-remix/build-web/</code>. Für DUB heißt der Disc-Ordner <code>game/</code>. Die Ausgabe besteht aus <code>mcdub3.js</code> und <code>mcdub3.wasm</code> in <code>work-dub/build-web/</code>.</p>
+
+  <h2>4. Das Spiel starten</h2>
+  <p>Für einen anderen Computer kopiere den entpackten Disc-Ordner und die passenden Dateien <code>.js</code>, <code>.wasm</code> und gegebenenfalls <code>.worker.js</code>. Du kannst alles als ZIP übertragen und auf dem Zielrechner entpacken. Derselbe Build läuft in Chrome auf kompatiblen Windows-, macOS- und Linux-Rechnern. Auf dem Zielrechner brauchst du weder WSL noch einen neuen Build.</p>
+  <ol>
+    <li>Öffne den Launcher in Chrome auf deinem PC. Beim ersten Besuch lädt die Seite einmal neu, um WebAssembly-Threads zu aktivieren.</li>
+    <li>Klicke auf <b>Choose build files</b> und wähle <code>.js</code> und <code>.wasm</code> gemeinsam aus. Falls vorhanden, wähle auch die passende <code>.worker.js</code> aus.</li>
+    <li>Klicke auf <b>Choose disc folder</b>, wähle <code>game-remix/</code> oder <code>game/</code>, erlaube Chrome den Ordnerzugriff und drücke <b>Play</b>. Nach dem Neuladen wählst du beide Eingaben erneut. Unter Windows öffnet <code>explorer.exe .</code> im Projekt den Explorer. Wenn Chrome den WSL-Pfad nicht öffnen kann, kopiere die Dateien und den Disc-Ordner zuerst in einen normalen Windows-Ordner. <a href="https://learn.microsoft.com/de-de/windows/wsl/filesystems">WSL-Dateien im Explorer finden</a></li>
+  </ol>
+  <p>Klicke auf das Spielbild, damit es Tastatureingaben empfängt. Enter ist Start, die Pfeiltasten steuern und die Leertaste ist die Handbremse. Die vollständige Belegung findest du unter <b>Controls</b>.</p>
+
+  <h2>5. Spielstände speichern und sichern</h2>
+  <p>Speichere im Spiel. Chrome behält den Spielstand beim Neuladen im privaten Speicher für diese Website und dieses Chrome-Profil. Mit <b>Saves → Back up to folder</b> schreibst du bei Bedarf eine datierte ZIP-Datei nach <code>mc3-saves-backup/</code> in einem Ordner deiner Wahl, auch im entpackten Spielordner. Über <b>Export all saves</b> kannst du die ZIP-Datei herunterladen, falls Chrome im gewählten Ordner nicht schreiben kann.</p>
+  <p>Zum Wiederherstellen entpacke die ZIP-Datei und wähle vor Play unter <b>Saves → Import save</b> die Datei <code>.mc3Remix</code> oder <code>.mc3</code> aus <code>UDATA/</code>. Beim Löschen der Websitedaten geht Chromes Kopie verloren. Bewahre die ZIP-Datei separat auf.</p>
+
+  <h2>Wenn etwas nicht funktioniert</h2>
+  <ul>
+    <li>Fehlt <code>default.xbe</code>, wähle den Ordner mit dieser Datei und allen Disc-Dateien oder überprüfe deine Kopie.</li>
+    <li>Prüfe bei einem abgelehnten Build oder Datenträger die Edition und verwende die unveränderte <code>default.xbe</code> deiner eigenen kompatiblen Xbox-Disc. Falls <code>emcc</code> fehlt, führe <code>source ~/emsdk/emsdk_env.sh</code> im aktuellen Terminal aus.</li>
+    <li>Falls WebAssembly-Threads fehlen, öffne den Launcher direkt in einer aktuellen Desktop-Version von Chrome und lade die Seite normal neu.</li>
+  </ul>
+</article>
+
+<article lang="fr" hidden>
+  <h1>Jouer à Midnight Club 3 sur PC</h1>
+  <p>GitHub Pages héberge le lanceur solo. Chrome utilise les fichiers de votre propre disque Xbox et la compilation correspondante sur votre ordinateur. Le lanceur est en anglais. Les langues du jeu dépendent de votre disque.</p>
+  <p><b>Pour la préparation, une seule fois</b> sur Ubuntu 24.04 ou sous Windows avec WSL 2, comptez environ 25 Go d’espace libre pour le SDK, le disque et la compilation. <b>Pour jouer</b>, utilisez un Chrome récent pour ordinateur avec les threads WebAssembly, SIMD, WebGL 2 et assez de mémoire. Si vos fichiers sont prêts, passez à l’étape 4.</p>
+  <p><a class="play" href="./">Retour au lanceur</a></p>
+
+  <h2>1. Copier votre disque Xbox</h2>
+  <p>Utilisez <i>DUB Edition Remix</i> pour la première Xbox (Europe ou États-Unis). La première <i>DUB Edition</i> pour Xbox (Europe ou États-Unis) est également compatible. Un lecteur DVD de PC ordinaire ne voit généralement que la partition vidéo.</p>
+  <ol>
+    <li>Si vous avez déjà une copie complète de votre disque au format ISO ou XISO, utilisez-la à l’étape 3.</li>
+    <li>Si vous avez le disque et une Xbox équipée d’un tableau de bord alternatif avec FTP, insérez le disque et ouvrez ce tableau de bord. Reliez la Xbox et le PC à votre réseau domestique. Dans un client FTP sur le PC, indiquez l’adresse IP affichée sur la Xbox et ses identifiants FTP. Ouvrez le lecteur DVD <code>D:</code> et copiez tout son contenu. Le dossier copié doit contenir <code>default.xbe</code> à sa racine.</li>
+    <li>Un lecteur DVD compatible doté d’un micrologiciel adapté peut aussi créer une ISO complète. <a href="https://xemu.app/docs/disc-images/#backing-up-your-games">Sauvegarder ses disques Xbox avec xemu (en anglais)</a></li>
+  </ol>
+
+  <h2>2. Installer Ubuntu et Emscripten</h2>
+  <p>Sous Windows 10 ou 11, ouvrez PowerShell en tant qu’administrateur et lancez la commande suivante. Redémarrez si nécessaire, ouvrez Ubuntu 24.04 depuis le menu Démarrer et créez votre identifiant et votre mot de passe Ubuntu. Sous Ubuntu, passez au bloc de commandes suivant. <a href="https://learn.microsoft.com/fr-fr/windows/wsl/install">Guide WSL de Microsoft</a></p>
+  <pre><code>wsl --install -d Ubuntu-24.04</code></pre>
+  <p>Exécutez ces commandes dans le terminal Ubuntu. Conservez le projet dans votre dossier personnel Ubuntu.</p>
+  <pre><code>sudo apt update
+sudo apt install -y git make
+cd ~
+git clone https://github.com/sPROFFEs/mc3-web-sites.git
+cd mc3-web-sites
+make setup GAME=remix
+
+git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+cd ~/emsdk
+./emsdk install latest
+./emsdk activate latest
+source ~/emsdk/emsdk_env.sh
+cd ~/mc3-web-sites</code></pre>
+  <p>Pour la première DUB Edition, utilisez <code>GAME=dub</code> dans chaque commande <code>make</code>. <a href="https://emscripten.org/docs/getting_started/downloads.html">Installation du SDK Emscripten (en anglais)</a></p>
+
+  <h2>3. Extraire et compiler le jeu</h2>
+  <p>Si vous avez une ISO, copiez-la dans votre dossier personnel Ubuntu sous le nom <code>mc3.iso</code> et lancez la première commande ci-dessous. Sous Windows, <code>cd ~ &amp;&amp; explorer.exe .</code> ouvre ce dossier dans l’Explorateur. Revenez au projet avec <code>cd ~/mc3-web-sites</code>. Si vous avez déjà copié les fichiers du disque, placez-les dans <code>game-remix/</code> dans le projet. Vérifiez la présence de <code>game-remix/default.xbe</code> et commencez par <code>make lift</code>.</p>
+  <pre><code>make extract GAME=remix ISO="$HOME/mc3.iso"
+make lift GAME=remix
+make web GAME=remix</code></pre>
+  <p>La première conversion et la compilation peuvent prendre plusieurs minutes. Remix produit <code>mcdub3remix.js</code> et <code>mcdub3remix.wasm</code> dans <code>work-remix/build-web/</code>. Pour DUB, le disque va dans <code>game/</code> et les fichiers <code>mcdub3.js</code> et <code>mcdub3.wasm</code> se trouvent dans <code>work-dub/build-web/</code>.</p>
+
+  <h2>4. Lancer le jeu</h2>
+  <p>Pour jouer sur un autre ordinateur, copiez le dossier extrait du disque et les fichiers <code>.js</code>, <code>.wasm</code> et, le cas échéant, <code>.worker.js</code> correspondants. Vous pouvez les transférer dans un ZIP et le décompresser sur l’autre ordinateur. La même compilation fonctionne dans Chrome sur les ordinateurs compatibles sous Windows, macOS ou Linux. L’ordinateur de destination peut lancer les fichiers directement.</p>
+  <ol>
+    <li>Revenez au lanceur dans Chrome sur votre ordinateur. À la première visite, la page se recharge une fois pour activer les threads WebAssembly.</li>
+    <li>Cliquez sur <b>Choose build files</b> et sélectionnez les fichiers <code>.js</code> et <code>.wasm</code> ensemble. Ajoutez le <code>.worker.js</code> correspondant si la compilation l’a créé.</li>
+    <li>Cliquez sur <b>Choose disc folder</b>, sélectionnez <code>game-remix/</code> ou <code>game/</code>, autorisez Chrome à lire le dossier et appuyez sur <b>Play</b>. Après un rechargement, refaites les deux sélections. Sous Windows, lancez <code>explorer.exe .</code> depuis le dossier du projet. Si Chrome ne peut pas ouvrir le chemin WSL, copiez les fichiers et le dossier du disque vers un dossier Windows ordinaire. <a href="https://learn.microsoft.com/fr-fr/windows/wsl/filesystems">Ouvrir les fichiers WSL dans l’Explorateur</a></li>
+  </ol>
+  <p>Cliquez sur le jeu pour activer le clavier. Entrée correspond à Start, les flèches permettent de conduire et la barre d’espace actionne le frein à main. Consultez <b>Controls</b> pour la liste complète.</p>
+
+  <h2>5. Enregistrer et sauvegarder votre progression</h2>
+  <p>Enregistrez votre progression dans le jeu. Chrome la conserve entre les visites dans l’espace privé associé à ce site et à votre profil Chrome. Utilisez <b>Saves → Back up to folder</b> quand vous souhaitez écrire un ZIP daté dans <code>mc3-saves-backup/</code>, dans le dossier de votre choix, par exemple celui du disque extrait. Si Chrome ne peut pas y écrire, utilisez <b>Export all saves</b> pour télécharger le ZIP.</p>
+  <p>Pour restaurer un profil, décompressez le ZIP et sélectionnez le fichier <code>.mc3Remix</code> ou <code>.mc3</code> dans <code>UDATA/</code> via <b>Saves → Import save</b>, avant de cliquer sur Play. Supprimer les données du site efface la copie de Chrome. Conservez le ZIP à part.</p>
+
+  <h2>En cas de problème</h2>
+  <ul>
+    <li>Si <code>default.xbe</code> est introuvable, sélectionnez le dossier contenant ce fichier et toutes les données du disque ou vérifiez que la copie est complète.</li>
+    <li>Si le disque ou la compilation est refusé, vérifiez l’édition du jeu et utilisez le <code>default.xbe</code> intact de votre disque Xbox compatible. Si <code>emcc</code> manque, lancez <code>source ~/emsdk/emsdk_env.sh</code> dans le terminal actuel.</li>
+    <li>Si les threads WebAssembly sont indisponibles, ouvrez le lanceur directement dans une version récente de Chrome pour ordinateur et rechargez la page normalement.</li>
+  </ul>
+</article>
+
+<article lang="es" hidden>
+  <h1>Jugar a Midnight Club 3 en tu PC</h1>
+  <p>GitHub Pages aloja el lanzador para un jugador. Chrome usa los archivos de tu propio disco de Xbox y la compilación correspondiente, guardados en tu equipo. El lanzador está en inglés. Los idiomas del juego dependen de tu disco.</p>
+  <p><b>Para preparar los archivos una vez</b>, usa Ubuntu 24.04 o Windows con WSL 2 y reserva unos 25 GB para el SDK, la copia del disco y la compilación. <b>Para jugar</b>, usa Chrome de escritorio reciente, con hilos de WebAssembly, SIMD, WebGL 2 y memoria suficiente. Si ya tienes los archivos preparados, ve al paso 4.</p>
+  <p><a class="play" href="./">Volver al lanzador</a></p>
+
+  <h2>1. Copia tu disco de Xbox</h2>
+  <p>Usa <i>DUB Edition Remix</i> para la primera Xbox (Europa o EE. UU.). También sirve la primera <i>DUB Edition</i> para Xbox (Europa o EE. UU.). Una unidad de DVD normal de PC suele leer solo la partición de vídeo.</p>
+  <ol>
+    <li>Si ya tienes una copia completa de tu disco en ISO o XISO, guárdala para el paso 3.</li>
+    <li>Si tienes el disco físico y una Xbox con un menú alternativo que permite FTP, mete el disco y abre ese menú. Conecta la Xbox y el PC a tu red doméstica. En un cliente FTP del PC, introduce la IP que muestra la Xbox y sus credenciales FTP. Abre la unidad de DVD <code>D:</code> y copia todo su contenido. El archivo <code>default.xbe</code> debe quedar en la raíz de la carpeta copiada.</li>
+    <li>También puedes crear una ISO completa con una unidad de DVD compatible y con firmware adaptado. <a href="https://xemu.app/docs/disc-images/#backing-up-your-games">Guía de copias de discos Xbox de xemu (en inglés)</a></li>
+  </ol>
+
+  <h2>2. Prepara Ubuntu y Emscripten</h2>
+  <p>En Windows 10 u 11, abre PowerShell como administrador y ejecuta el siguiente comando. Reinicia si te lo pide, abre Ubuntu 24.04 desde Inicio y crea tu usuario y contraseña de Ubuntu. Si ya usas Ubuntu, pasa al siguiente bloque de comandos. <a href="https://learn.microsoft.com/es-es/windows/wsl/install">Guía de WSL de Microsoft</a></p>
+  <pre><code>wsl --install -d Ubuntu-24.04</code></pre>
+  <p>Ejecuta estos comandos en la terminal de Ubuntu. Guarda el proyecto en tu carpeta personal de Ubuntu.</p>
+  <pre><code>sudo apt update
+sudo apt install -y git make
+cd ~
+git clone https://github.com/sPROFFEs/mc3-web-sites.git
+cd mc3-web-sites
+make setup GAME=remix
+
+git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+cd ~/emsdk
+./emsdk install latest
+./emsdk activate latest
+source ~/emsdk/emsdk_env.sh
+cd ~/mc3-web-sites</code></pre>
+  <p>Para la primera DUB Edition, usa <code>GAME=dub</code> en todos los comandos <code>make</code>. <a href="https://emscripten.org/docs/getting_started/downloads.html">Instalación de Emscripten (en inglés)</a></p>
+
+  <h2>3. Extrae y compila el juego</h2>
+  <p>Si tienes una ISO, cópiala a tu carpeta personal de Ubuntu con el nombre <code>mc3.iso</code> y ejecuta la primera orden de abajo. En Windows, <code>cd ~ &amp;&amp; explorer.exe .</code> abre esa carpeta en el Explorador. Después, vuelve al proyecto con <code>cd ~/mc3-web-sites</code>. Si ya tienes los archivos extraídos, ponlos en <code>game-remix/</code> dentro del proyecto. Comprueba que existe <code>game-remix/default.xbe</code> y empieza por <code>make lift</code>.</p>
+  <pre><code>make extract GAME=remix ISO="$HOME/mc3.iso"
+make lift GAME=remix
+make web GAME=remix</code></pre>
+  <p>La primera conversión y compilación pueden tardar varios minutos. Remix genera <code>mcdub3remix.js</code> y <code>mcdub3remix.wasm</code> en <code>work-remix/build-web/</code>. Para DUB, la carpeta del disco es <code>game/</code> y salen <code>mcdub3.js</code> y <code>mcdub3.wasm</code> en <code>work-dub/build-web/</code>.</p>
+
+  <h2>4. Abre el juego</h2>
+  <p>Para jugar en otro equipo, copia la carpeta del disco extraído y los archivos <code>.js</code>, <code>.wasm</code> y, si existe, <code>.worker.js</code> de esa compilación. Puedes enviarlos en un ZIP y descomprimirlo en el equipo de destino. La misma compilación sirve en ordenadores compatibles con Windows, macOS y Linux. En el equipo de destino puedes abrirla directamente con Chrome.</p>
+  <ol>
+    <li>Vuelve al lanzador en Chrome de escritorio. La primera vez la página se recarga una sola vez para activar los hilos de WebAssembly.</li>
+    <li>Pulsa <b>Choose build files</b> y selecciona juntos el <code>.js</code> y el <code>.wasm</code>. Incluye el <code>.worker.js</code> correspondiente si la compilación lo generó.</li>
+    <li>Pulsa <b>Choose disc folder</b>, selecciona <code>game-remix/</code> o <code>game/</code>, permite a Chrome leer la carpeta y pulsa <b>Play</b>. Vuelve a seleccionar ambas cosas si recargas. En Windows, ejecuta <code>explorer.exe .</code> desde el proyecto para localizar los archivos. Si Chrome no puede abrir la ruta de WSL, copia los archivos y la carpeta del disco a una carpeta corriente de Windows. <a href="https://learn.microsoft.com/es-es/windows/wsl/filesystems">Ver archivos de WSL en el Explorador</a></li>
+  </ol>
+  <p>Haz clic en el juego para activar el teclado. Enter equivale a Start, las flechas sirven para conducir y Espacio es el freno de mano. En <b>Controls</b> tienes la lista completa.</p>
+
+  <h2>5. Guarda tu partida y haz una copia</h2>
+  <p>Guarda dentro del juego. Chrome conserva la partida entre visitas en su almacenamiento privado para este sitio y ese perfil de Chrome. Cuando quieras una copia, ve a <b>Saves → Back up to folder</b> para escribir un ZIP con fecha en <code>mc3-saves-backup/</code>, dentro de la carpeta que elijas, incluida la del disco extraído. Si Chrome no puede escribir allí, usa <b>Export all saves</b> para descargar el ZIP.</p>
+  <p>Para recuperar un perfil, descomprime el ZIP y antes de pulsar Play selecciona el archivo <code>.mc3Remix</code> o <code>.mc3</code> de <code>UDATA/</code> con <b>Saves → Import save</b>. Borrar los datos del sitio elimina la copia de Chrome. Conserva el ZIP aparte.</p>
+
+  <h2>Si algo falla</h2>
+  <ul>
+    <li>Si falta <code>default.xbe</code>, selecciona la carpeta que contiene ese archivo y todos los datos del disco o revisa que la copia esté completa.</li>
+    <li>Si se rechaza el disco o la compilación, comprueba la edición y usa el <code>default.xbe</code> intacto de tu propio disco de Xbox compatible. Si falta <code>emcc</code>, ejecuta <code>source ~/emsdk/emsdk_env.sh</code> en la terminal actual.</li>
+    <li>Si los hilos de WebAssembly no están disponibles, abre el lanzador directamente en una versión reciente de Chrome de escritorio y recarga normalmente.</li>
+  </ul>
+</article>
+</main>
+</body>
+</html>

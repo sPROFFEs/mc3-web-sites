@@ -33,13 +33,14 @@ endif
 WORK := $(or $(MC3_WORK),$(CURDIR)/work-$(GAME))
 LOGS := $(WORK)/logs
 NOW   = $(shell date +%Y%m%d_%H%M%S)
+PAGES_DIR ?= build-pages
 
 # Command-line settings that the scripts read from the environment.
 export VULKAN DEBUG GEN_DEBUGINFO JOBS SECS HEADLESS GDB WINDOW VIDEO KEEP EVERY TRACE \
        MC3_WORK MC3_GAME_DIR MC3_MMIO_SECTIONS MC3_RECOMP_ARGS MC3_DISASM_ARGS FACTOR MIN FILES GAME EDITION
 
 .PHONY: help setup extract lift regen relift xbe-edition seeds lift-report \
-        web web-node web-serve \
+        web web-node web-serve web-pages \
         build build-vk build-debug run run-gdb run-headless snapshot report hoststacks profile record difftest trap \
         hd-dump hd-tools hd-upscale import-save \
         log du clean-build clean-gen clean toolkit-test
@@ -96,6 +97,12 @@ web-node:  ## Browser build for Node.js (host files, headless): a boot test with
 web-serve:  ## Serve the browser build and the disc on http://localhost:3000/ (COOP/COEP, Range; PORT=, BIND=)
 	@bash -c 'source tools/env.sh && mc3_need_game && python3 tools/web_serve.py --root web --root "$$MC3_WORK/build-web" \
 	    --disc "$$MC3_GAME_DIR" --port $(or $(PORT),3000) --bind $(or $(BIND),127.0.0.1)'
+
+web-pages:  ## Stage the GitHub Pages site (PAGES_DIR=build-pages)
+	install -d "$(PAGES_DIR)/icons"
+	install -m 644 web/{index.html,guide.html,guide.js,lan.js,rtc.js,touch.js,cloud.js,chat.js,disc_cache.js,flags.png,manifest.webmanifest,pages.js,pages-worker.js} CHANGELOG.md LICENSE NOTICE.md "$(PAGES_DIR)/"
+	install -m 644 web/icons/{logo.png,mc3.svg,icon-192.png,icon-512.png,apple-touch-icon.png} "$(PAGES_DIR)/icons/"
+	python3 -c 'import json, os; print(json.dumps(dict(localFiles=True, sourceUrl=os.getenv("MC3_SOURCE_URL", ""))))' > "$(PAGES_DIR)/config.json"
 
 ## Native Linux (optional: the debug loop, with gdb, difftest, perf)
 build:  ## Build the native desktop binary (OpenGL) into work-<game>/build-linux

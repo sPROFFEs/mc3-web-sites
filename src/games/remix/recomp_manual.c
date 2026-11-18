@@ -4079,12 +4079,21 @@ void sub_0018C580(void) { online_leave(); sub_0018C580_gen(); }    /* Tokyo */
  * before, for Online Races (LAN_Play, System Link). */
 #ifdef __EMSCRIPTEN__
 #include "input/xinput_xbox.h"
+static int web_local_only(void)
+{
+    const char *value = getenv("MC3_LOCAL_ONLY");
+    return value && value[0] == '1';
+}
 #endif
 extern void sub_0018C5A0_gen(void);
 void sub_00180160(void);
 void sub_0018C5A0(void)
 {
 #ifdef __EMSCRIPTEN__
+    if (web_local_only()) {
+        sub_0018C530();  /* fallback if the menu could not remove this item */
+        return;
+    }
     XBOX_INPUT_STATE st;
     if (!(xbox_InputGetState(0, &st) == 0 && st.Gamepad.bAnalogButtons[XBOX_BUTTON_WHITE] > XBOX_ANALOG_BUTTON_THRESHOLD)) {
         fprintf(stderr, "[ONLINE] main menu Online: straight into Free Roam (hold White for Online Races)\n");
@@ -4254,18 +4263,19 @@ static void main_menu_online_first(void)
     MEM32(MM_REC(0)) = rec[0]; MEM32(MM_REC(0) + 4u) = rec[1]; MEM32(MM_REC(0) + 0xCu) = rec[2];
     for (k = 0; k < 2 * nl; k++) MEM32(MEM32(MM_REC(0) + 8u) + 4u * k) = lab[k];
 #ifdef __EMSCRIPTEN__
-    {   /* Browser: no Arcade item (Free Roam is its way into the cruise). Every
-         * list routine reads the count [list+0x238+4*col] live (SetSelection's
-         * bound, the up/down wrap, the visible rows): later slots move one up
-         * as above and the count drops by one. MC3_ARCADE=1 keeps it. */
+    {   /* The static launcher keeps Arcade and removes Online. The server
+         * launcher keeps Online and removes Arcade unless MC3_ARCADE=1.
+         * The menu reads the current count for its bounds and visible rows. */
         static int keep = -1;
-        uint32_t n = MEM32(lst + 0x238u + 4u * col), a;
+        uint32_t n = MEM32(lst + 0x238u + 4u * col), a, drop;
+        int solo = web_local_only();
         if (keep < 0) {
             const char *e = getenv("MC3_ARCADE");
             keep = e && e[0] == '1';
         }
-        for (a = 0; !keep && n <= 20u && a < n; a++) {
-            if (MEM32(lst + 0xECu + a * 16u + 4u) != 0x0018C530u)
+        drop = solo ? 0x0018C5A0u : 0x0018C530u;
+        for (a = 0; (solo || !keep) && n <= 20u && a < n; a++) {
+            if (MEM32(lst + 0xECu + a * 16u + 4u) != drop)
                 continue;
             for (i = a; i + 1u < n; i++) {       /* slots after Arcade one up */
                 for (w = 0; w < 4; w++)
@@ -4277,8 +4287,8 @@ static void main_menu_online_first(void)
                     MEM32(MEM32(MM_REC(i) + 8u) + 4u * k) = MEM32(MEM32(MM_REC(i + 1u) + 8u) + 4u * k);
             }
             MEM32(lst + 0x238u + 4u * col) = n - 1u;
-            fprintf(stderr, "[ONLINE] main menu: Arcade item (slot %u) removed, %u items (MC3_ARCADE=1 keeps it)\n",
-                    a, n - 1u);
+            fprintf(stderr, "[ONLINE] main menu: %s item (slot %u) removed, %u items\n",
+                    solo ? "Online" : "Arcade", a, n - 1u);
             break;
         }
     }

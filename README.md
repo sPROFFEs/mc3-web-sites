@@ -1,117 +1,75 @@
-<p align="center"><img src="logo.png" alt="Midnight Club 3: DUB Edition (Remix)" width="500"></p>
+<p align="center"><img src="logo.png" alt="Midnight Club 3: DUB Edition Remix" width="500"></p>
 
-# Midnight Club 3 in the browser
+# Midnight Club 3 on GitHub Pages
 
-A fan project that runs the Xbox racing game *Midnight Club 3: DUB Edition Remix* (2005) in Google Chrome. The game's
-x86 code is translated to C ahead of time ([xboxrecomp](https://github.com/sp00nznet/xboxrecomp)) and compiled to
-WebAssembly with Emscripten. Direct3D runs on WebGPU (WebGL 2 as a fallback) and the sound on Web Audio. You bring your
-own disc.
+Play **single-player Midnight Club 3** in desktop Chrome. GitHub Pages serves the launcher. Chrome runs the game locally using your own extracted Xbox disc and the matching browser build. You can use the keyboard or a controller. Progress is kept in your Chrome profile.
 
-> Not affiliated with or endorsed by Rockstar Games, Take-Two Interactive or Microsoft. This repository contains none
-> of the game's code or data.
+## Setup guide
 
-## Features
+Open **Setup guide** in the launcher for the full walkthrough, including how to copy your own disc, set up Windows or Ubuntu, compile once and start playing.
 
-- **WebGPU renderer** by default, about 30 fps in cruise; WebGL 2 where WebGPU is missing.
-- **Optional 60 fps** races and cruise (Settings, "60 fps races and cruise"; needs WebGPU to hold it).
-- **System Link over a virtual LAN:** everyone on the same server meets as if on one local network. The bundled Rust
-  server (`web/server`) carries it.
-- **Saves in the browser** (OPFS), with import of Xbox profiles.
-- **Keyboard and gamepads** (Gamepad API, up to four).
-- **Settings page** for the renderer, resolution, filtering, language and more.
-- Planned: free roam online for everyone on one server.
+- [English](https://sproffes.github.io/mc3-web-sites/guide.html?lang=en)
+- [Deutsch](https://sproffes.github.io/mc3-web-sites/guide.html?lang=de)
+- [Français](https://sproffes.github.io/mc3-web-sites/guide.html?lang=fr)
+- [Español](https://sproffes.github.io/mc3-web-sites/guide.html?lang=es)
 
-## What you need
+The launcher interface is in English. The game's text and audio languages depend on the disc.
 
-- **The game:** your own Xbox disc of *Midnight Club 3: DUB Edition Remix* (Europe or USA), as files or as an ISO.
-  The build accepts only the retail `default.xbe` files it knows, checked by size and hash
-  (`config/remix/xbe_editions.h`). The DUB Edition (`GAME=dub`) is also supported by the build, at an earlier stage.
-- **To build:** Linux, or Windows with WSL 2 (clone in the Linux file system, not under `/mnt/c`), with Python 3,
-  CMake, Ninja, the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html) and, for the server,
-  Rust 1.85 or newer.
-- **To play:** the latest Google Chrome. Other browsers are untested.
+## Prepare once, play on another computer
 
-## Build
+Use Ubuntu or Windows with WSL to extract the disc and build the WebAssembly files. The computer you play on needs a recent desktop Chrome with WebAssembly threads and SIMD, WebGL 2, and enough memory to run the game. The same browser build can be used on compatible Windows, macOS and Linux computers. This project has verified the launcher with test files in Chromium on Linux.
 
-```sh
-git clone https://github.com/LeandroDettmer/mc3-web.git
-cd mc3-web
-make setup                                        # Ubuntu / WSL: build packages and the Python venv
-source ~/emsdk/emsdk_env.sh                       # Emscripten on the PATH (or EMSDK=<dir>; default /opt/emsdk)
-make extract GAME=remix ISO=~/discs/mc3-remix.iso # unpacks into game-remix/ (or copy the disc's files there)
-make lift GAME=remix                              # translates the code to C, once: 10 to 20 minutes
-make web GAME=remix                               # the browser build, into work-remix/build-web
-```
+To move the game, zip the extracted disc folder and its matching `.js` and `.wasm` files together. Include the `.worker.js` if the build produced one. Unzip the archive on the destination computer, open the launcher, and select the build files and the extracted disc folder there. Transfers between computers need no recompilation. Export and import your profile separately to keep your progress.
 
-`tools/build_web.sh` builds into a folder of your own. The generated C and the build are made from your disc, so they
-are never committed, and the disc is never copied into the build: it is read from your folder over HTTP.
+## Quick start
 
-## Play
+1. Use your own original Xbox copy of **DUB Edition Remix** (Europe or USA). **DUB Edition** for Xbox (Europe or USA) also works. If you have the physical disc, copy the contents of the Xbox DVD drive over FTP from an original Xbox with an FTP-enabled dashboard. A compatible reflashed DVD drive can make a full ISO. [Xbox disc backup guide](https://xemu.app/docs/disc-images/#backing-up-your-games)
+2. On Windows, open PowerShell as administrator and run `wsl --install -d Ubuntu-24.04`. When Ubuntu is ready, run the commands below in its terminal. On Ubuntu, start with the commands below. [Microsoft WSL installation guide](https://learn.microsoft.com/windows/wsl/install)
 
-Quick, with the dev server:
+   ```sh
+   sudo apt update
+   sudo apt install -y git make
+   cd ~
+   git clone https://github.com/sPROFFEs/mc3-web-sites.git
+   cd mc3-web-sites
+   make setup GAME=remix
 
-```sh
-make web-serve GAME=remix        # http://localhost:3000/ (PORT=, BIND= change that)
-```
+   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+   cd ~/emsdk
+   ./emsdk install latest
+   ./emsdk activate latest
+   source ~/emsdk/emsdk_env.sh
+   cd ~/mc3-web-sites
+   ```
 
-Or with the Rust server, which also carries System Link:
+3. Put your own ISO or XISO backup at `~/mc3.iso` and extract it. If you already have the files, put them under `game-remix/` so that `game-remix/default.xbe` exists and start at `make lift`. Use the original, unmodified `default.xbe`. Run each command after the previous one has finished.
 
-```sh
-cd web/server && cargo build --release
-target/release/mc3-server --web .. --build ../../work-remix/build-web \
-    --disc ../../game-remix --port 3000
-```
+   ```sh
+   make extract GAME=remix ISO="$HOME/mc3.iso"
+   make lift GAME=remix
+   make web GAME=remix
+   ```
 
-`--web`, `--build` and `--disc` repeat; `--bind 0.0.0.0` serves other PCs (localhost by default). See
-[web/server/README.md](web/server/README.md).
+4. In desktop Chrome, open the [launcher](https://sproffes.github.io/mc3-web-sites/). Under **Choose build files**, select `mcdub3remix.js` and `mcdub3remix.wasm` in `work-remix/build-web/`. Include the matching `.worker.js` if Emscripten created it. Under **Choose disc folder**, select `game-remix/` and press **Play**. Reselect the files and folder after reloading. On Windows, run `explorer.exe .` from the Ubuntu project directory to find the files. If Chrome cannot open the WSL path, copy them to a normal Windows folder. [Microsoft WSL file access guide](https://learn.microsoft.com/windows/wsl/filesystems)
 
-Open **http://localhost:3000/** in Chrome and press **Play**. The player's guide is
-[docs/web/PLAYING.md](docs/web/PLAYING.md).
+For the original **DUB Edition**, use `GAME=dub` in all the `make` commands. The disc folder is `game/`, and the browser build files are `mcdub3.js` and `mcdub3.wasm` under `work-dub/build-web/`.
 
-## Controls
+## Saves
 
-The keyboard is pad 1, laid out like the Xbox pad. Arrow keys steer, gas and brake; Space is the handbrake; Enter is
-Start. A, B, X, Y are the face buttons; I/J/K/L the d-pad; Q/E White and Black; T/F/G/H the right stick. The page's
-**Controls** tab and [docs/web/PLAYING.md](docs/web/PLAYING.md) have the full map. Gamepads work as pads 1 to 4.
+Save inside the game. Chrome keeps the primary copy in its private storage for this site and that Chrome profile. In **Saves**, use **Back up to folder** whenever you want a dated ZIP in `mc3-saves-backup/` under a folder you choose. You can choose the extracted disc folder. **Export all saves** downloads a ZIP if Chrome cannot write to that folder.
 
-## Online
+To restore a profile, unzip the backup and select the `.mc3Remix` or `.mc3` file from `UDATA/` with **Saves → Import save** before starting the game. Keep a separate ZIP to recover your progress after clearing browser data or changing computers.
 
-System Link is the game's own multiplayer over a local network. On the web, the server's `/lan` WebSocket switch is
-that network: players on the same server get virtual addresses and find each other in the game's System Link menu.
-Switch it on in the start page's **Online** tab (Remix). To play with friends on other PCs, serve the page over HTTPS.
-Free roam for everyone on one server is planned.
+## Publishing the launcher
 
-## Contributing
+In the repository's **Settings → Pages → Build and deployment**, select **GitHub Actions**. Push to `main` or run **Deploy GitHub Pages** from the **Actions** tab. `make web-pages` stages the same static files in `build-pages/`. GitHub Actions needs only the launcher assets. [GitHub Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
-The development loop (lift, build, test), the project layout and an optional native Linux build for debugging with
-gdb and difftest are in [CONTRIBUTING.md](CONTRIBUTING.md). This repository is about the browser port: the macOS,
-Windows and Nintendo Switch hosts of mcdub3-nx are not maintained here.
+For controls and saves, see the [player reference](docs/web/PLAYING.md). For the development workflow, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## How it works
+## Credits and license
 
-- **`tools/`:** a Python lifter turns every function of `default.xbe` into C.
-- **`xboxrecomp/`:** the toolkit: Xbox kernel, Direct3D on OpenGL and WebGPU, audio, XNet.
-- **`src/`:** this game's glue: boot, file system, overrides.
-- **`web/`:** the start page and its scripts; **`web/server/`:** the Rust server.
-- Decisions: [docs/decisions/](docs/decisions/). Developer notes: [CONTRIBUTING.md](CONTRIBUTING.md), [CLAUDE.md](CLAUDE.md).
+A fan project based on [mc3-web by Leandro Dettmer](https://github.com/LeandroDettmer/mc3-web), [mcdub3-nx](https://github.com/laureladastra/mcdub3-nx) by Laure Ladastra (MIT) and [xboxrecomp](https://github.com/sp00nznet/xboxrecomp). The WebGPU renderer and upstream networking draw from [nfsu2-web](https://github.com/th0mk/nfsu2-web) by th0mk (MIT).
 
-## Credits
+The project's own code is licensed under [GNU AGPL-3.0](LICENSE) with an additional attribution term. Hosted copies must show “Based on mc3-web by Leandro Dettmer” with a link to the upstream project and offer the source for modified copies. See the full terms and third-party licenses in [NOTICE.md](NOTICE.md).
 
-Based on [mcdub3-nx](https://github.com/laureladastra/mcdub3-nx) by Laure Ladastra (MIT) and the
-[xboxrecomp](https://github.com/sp00nznet/xboxrecomp) toolkit. The WebGPU renderer, the server and the networking
-build on ideas and code from [nfsu2-web](https://github.com/th0mk/nfsu2-web) by th0mk (MIT). Full list and third-party
-licences: [NOTICE.md](NOTICE.md).
-
-## License
-
-mc3-web's own code is under the GNU AGPL-3.0 ([LICENSE](LICENSE)), plus one extra term. If you ship or host a copy,
-modified or not, you must show "Based on mc3-web by Leandro Dettmer" with a link to this repository where its users can
-see it. If you host a modified copy, you must also publish its source. The terms are in
-[NOTICE.md](NOTICE.md#additional-terms-agpl-30-section-7). The code from mcdub3-nx (Laure Ladastra) stays MIT
-([LICENSES/MIT.txt](LICENSES/MIT.txt)). The vendored toolkit in `xboxrecomp/` is MIT too, with LGPL-2.1 parts extracted
-from xemu (see [NOTICE.md](NOTICE.md)). This repository contains no game code or data.
-
-## Legal
-
-*Midnight Club* is a trademark of Take-Two Interactive / Rockstar Games. Xbox is a trademark of Microsoft. This is an
-unofficial fan project, not affiliated with or endorsed by them. Play only with a disc you own.
+*Midnight Club* is a trademark of Take-Two Interactive and Rockstar Games. Xbox is a trademark of Microsoft. This is an unofficial fan project. The repository contains no game code or disc data.

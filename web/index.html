@@ -583,7 +583,7 @@
     <button type="button" class="tab" role="tab" data-tab="play">Play</button>
     <button type="button" class="tab" role="tab" data-tab="settings">Settings</button>
     <button type="button" class="tab" role="tab" data-tab="controls">Controls</button>
-    <button type="button" class="tab" role="tab" data-tab="online">Online</button>
+    <button type="button" class="tab" role="tab" data-tab="online" data-server-only>Online</button>
     <button type="button" class="tab" role="tab" data-tab="saves">Saves</button>
     <button type="button" class="tab" role="tab" data-tab="mods">Mods</button>
     <button type="button" class="tab" role="tab" data-tab="project">About</button>
@@ -596,6 +596,15 @@
   <section role="tabpanel" data-pane="play">
     <p class="status" id="status" role="status">Checking…</p>
     <p class="status-sub" id="status-sub">Looking for the discs and the build.</p>
+    <div id="local-files" hidden>
+      <div class="row">
+        <label class="btn file-btn">Choose build files<input id="local-build" type="file" accept=".js,.wasm,.bin" multiple disabled></label>
+        <label class="btn file-btn">Choose disc folder<input id="local-disc" type="file" webkitdirectory disabled></label>
+      </div>
+      <p class="hint">Single player. Choose your own build files and extracted Xbox disc folder again after a reload.</p>
+      <p><a class="btn" href="guide.html">Setup guide · EN / DE / FR / ES</a></p>
+      <p class="msg" id="local-files-status" role="status"></p>
+    </div>
     <p class="row" id="signin" hidden style="margin-bottom:16px"><a class="btn" id="signin-link" href="#">Sign in</a> <span class="hint">The disc server wants you signed in; it sends you back here.</span></p>
     <fieldset class="pick" id="game-pick">
       <legend>Game</legend>
@@ -607,7 +616,7 @@
     <button type="button" class="btn" id="resume-btn" hidden style="margin-top:8px">Back to Free Roam</button>
     <label class="opt" style="margin-top:16px"><input type="checkbox" id="skipintro" aria-describedby="skipintro-help"> <span>Skip intro</span></label>
     <p class="hint" id="skipintro-help" style="margin-top:4px">Boots past the Rockstar logos and the intro movie, none of them played. <code>MC3_SKIP_MOVIES=hard</code></p>
-    <div class="play-cols">
+    <div class="play-cols" data-server-only>
       <div>
         <div class="you" aria-label="You, as other players see you">
           <span class="flag" id="you-flag" role="img" title="Change flag"></span>
@@ -630,7 +639,7 @@
       <div class="tabs small" role="tablist" aria-label="Settings">
         <button type="button" class="tab" role="tab" data-tab="sg-picture">Picture</button>
         <button type="button" class="tab" role="tab" data-tab="sg-game">Game</button>
-        <button type="button" class="tab" role="tab" data-tab="sg-online">Online</button>
+        <button type="button" class="tab" role="tab" data-tab="sg-online" data-server-only>Online</button>
         <button type="button" class="tab" role="tab" data-tab="sg-input">Controls</button>
         <button type="button" class="tab" role="tab" data-tab="sg-perf">Performance</button>
         <button type="button" class="tab" role="tab" data-tab="sg-adv">Advanced</button>
@@ -740,11 +749,13 @@
       <div class="row">
         <button type="button" class="btn" id="saves-refresh">Refresh</button>
         <button type="button" class="btn" id="saves-export">Export all saves</button>
+        <button type="button" class="btn" id="saves-folder" hidden>Back up to folder</button>
         <label class="btn file-btn">Import save<input type="file" id="import" accept=".mc3,.mc3Remix,.gsx"></label>
       </div>
     </div>
     <ul class="profiles" id="profiles" aria-label="Profiles in this browser"></ul>
     <p class="msg" id="saves-msg" role="status"></p>
+    <p class="hint" id="saves-folder-help" hidden>Progress stays in this Chrome profile. <b>Back up to folder</b> writes a ZIP under <code>mc3-saves-backup</code> in the folder you choose.</p>
     <p class="hint" style="margin-top:12px">Saved in this browser's private storage (OPFS), under <code>UDATA/54540079/</code>; the game keeps the last two copies of each one and puts the newest good one back if a save is ever cut short. <b>Export all saves</b> downloads every profile, the online profile and those copies as one <code>.zip</code>: keep it somewhere safe. Download saves a profile (the Remix's is <code>.mc3Remix</code>, the DUB Edition's <code>.mc3</code>). Import takes one downloaded from this site (another browser or device) or, for the DUB Edition, from an Xbox, and signs it for the port; a file of the other game is refused; memory-unit images (<code>.gsx</code>) come later, until then <code>make import-save FILE=…</code>. PS2 profiles can't be used.</p>
     <div id="cloud" hidden>
       <h3 style="margin-top:24px">Cloud saves</h3>
@@ -861,6 +872,7 @@
       <p>Online: free roam with other players in the same city, and the garage with every car and part unlocked. Your online profile is kept in this browser.</p>
       <p>You need your own copy of the game: extract your disc and serve it from your own machine with <code>tools/web_serve.py</code> or <code>web/server</code>. Nothing of the game ships with this page; saves stay in this browser.</p>
       <p>Source: <a href="https://github.com/LeandroDettmer/mc3-web" target="_blank" rel="noopener noreferrer">github.com/LeandroDettmer/mc3-web</a>. Bugs and ideas: open an issue there; contributions by fork and pull request.</p>
+      <p id="pages-source" hidden><a id="pages-source-link" target="_blank" rel="noopener noreferrer">Source for this GitHub Pages version</a></p>
     </div>
     <div class="pane prose" role="tabpanel" data-pane="credits" hidden>
       <p style="margin-top:12px">mcdub3 web by Leandro Dettmer, a browser port of <a href="https://github.com/laureladastra/mcdub3-nx" target="_blank" rel="noopener noreferrer">mcdub3-nx</a> by Laure Ladastra (MIT).</p>
@@ -936,7 +948,7 @@
       <div class="ig-nav" role="tablist" aria-label="Settings sections" aria-orientation="vertical">
         <button type="button" class="tab" role="tab" data-tab="ig-run">Game</button>
         <button type="button" class="tab" role="tab" data-tab="ig-gfx">Graphics</button>
-        <button type="button" class="tab" role="tab" data-tab="ig-fr">Free Roam</button>
+        <button type="button" class="tab" role="tab" data-tab="ig-fr" data-server-only>Free Roam</button>
         <button type="button" class="tab" role="tab" data-tab="ig-input">Controls</button>
         <button type="button" class="tab" role="tab" data-tab="ig-info">Info</button>
       </div>
@@ -944,7 +956,7 @@
         <span id="run-status" role="status">Loading…</span>
         <div class="set"><div><span class="set-label">Full screen</span><p class="hint one">Hides the browser's bars.</p></div>
           <button type="button" class="btn" id="full">Fullscreen</button></div>
-        <div class="set"><div><span class="set-label">Online races</span><p class="hint one">Make or join a race room, then Online Races in the game's Online menu.</p></div>
+        <div class="set" data-server-only><div><span class="set-label">Online races</span><p class="hint one">Make or join a race room, then Online Races in the game's Online menu.</p></div>
           <button type="button" class="btn" id="races-btn" aria-expanded="false" aria-controls="races-panel" hidden>Races</button></div>
         <div class="set"><div><span class="set-label">Save progress</span><p class="hint one" id="save-msg" role="status">Saves now: the career, or your Online money and garage.</p></div>
           <button type="button" class="btn" id="save-btn" disabled>Save</button></div>
@@ -1467,7 +1479,16 @@
       for (const k in d) if (env[k] === undefined) env[k] = d[k];
     }
     for (const k of Object.keys(env)) if ((k.startsWith('MC3_TOUCH') && k !== 'MC3_TOUCH_TRACE') || k.startsWith('MC3_CHAT')) delete env[k];   // the page's own (web/touch.js, web/chat.js)
-    if (disc && !env.MC3_DISC_URL) env.MC3_DISC_URL = new URL(disc.path, location.href).href;
+    if (!onlineEnabled()) {
+      env.MC3_LOCAL_ONLY = '1';
+      env.MC3_CAREER_ONLINE = '0';
+      env.MC3_NET_WAIT_MS = '0';
+    }
+    if (disc?.local) {
+      env.MC3_DISC_URL = disc.path;
+      env.MC3_DISC_CACHE = '0';
+      env.MC3_PREFETCH = '0';
+    } else if (disc && !env.MC3_DISC_URL) env.MC3_DISC_URL = new URL(disc.path, location.href).href;
     const packs = mods[(disc || currentDisc())?.name];
     if (packs?.length && env.MC3_MODS === undefined) env.MC3_MODS = packs.filter(modOn).map(m => m.id).join(',');   // '' = none (src/games/remix/mods.c)
     return env;
@@ -1630,7 +1651,7 @@
   // --- tabs (arrow keys move between them)
   function initTabs() {
     for (const list of document.querySelectorAll('[role=tablist]')) {
-      const tabs = [...list.querySelectorAll(':scope > [role=tab]')];
+      const tabs = [...list.querySelectorAll(':scope > [role=tab]:not([hidden])')];
       const panes = [...list.parentElement.querySelectorAll(':scope > [role=tabpanel]')];
       const key = 'tab.' + (list.getAttribute('aria-label') || '');
       const show = (name, focus) => {
@@ -1773,6 +1794,7 @@
 
   // --- a deploy's config.json (see the top of this file); none: everything from this page's server
   let cfg = null;
+  const onlineEnabled = () => !cfg?.localFiles;
   async function loadConfig() {
     try { const r = await fetch('config.json', { cache: 'no-store' }); if (r.ok) cfg = await r.json(); } catch {}
     // A test deploy's URLs may hold {key}: a password the disc server checks, asked once and kept in this browser.
@@ -1834,8 +1856,9 @@
   }
   setInterval(versionCheck, 300000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - verAt >= 300000) versionCheck(); });
-  // The module's file: from cfg.moduleUrl when set, else beside the page.
-  const moduleFile = f => cfg?.moduleUrl ? new URL(f, cfg.moduleUrl.replace(/\/?$/, '/')).href : f;
+  // The module's file: selected locally on Pages, or from the configured deployment / page.
+  const moduleFile = f => localFiles ? new URL('module/' + f, localFiles.root).href
+    : cfg?.moduleUrl ? new URL(f, cfg.moduleUrl.replace(/\/?$/, '/')).href : f;
   // The deploy's module is on another origin: its .js comes as a blob URL, so the pthread workers Emscripten
   // starts from the script's own URL are same-origin; the .wasm is fetched with the sign-in cookie.
   async function moduleBlob(app) {
@@ -1850,6 +1873,7 @@
   // the start with the 'could not start' box.
   function moduleWasm(app) {
     const t0 = performance.now(), ms = () => Math.round(performance.now() - t0) + ' ms';
+    const label = localFiles ? 'Loading the build' : 'Downloading the game';
     // A browser without shared wasm memory (Samsung Internet 14 = Chrome 87, 2026-11-12: 'invalid memory limits
     // flags (enable via --experimental-wasm-threads)') can never run it: say so instead of the compiler's words.
     const fail = (step, e) => {
@@ -1868,7 +1892,7 @@
         const total = +r.headers.get('x-raw-length') || (r.headers.get('content-encoding') ? 0 : +r.headers.get('content-length')) || 0; let got = 0;
         if (r.body) r = new Response(r.body.pipeThrough(new TransformStream({ transform(ch, c) {
           got += ch.length; const mb = (got / 1048576).toFixed(0);
-          bootWhat(total >= got ? `Downloading the game: ${mb} of ${(total / 1048576).toFixed(0)} MB` : `Downloading the game: ${mb} MB`, total >= got ? got * 100 / total : null);
+          bootWhat(total >= got ? `${label}: ${mb} of ${(total / 1048576).toFixed(0)} MB` : `${label}: ${mb} MB`, total >= got ? got * 100 / total : null);
           c.enqueue(ch);
         } })), { status: r.status, headers: r.headers });
         // streaming needs the server's application/wasm (the deploy and mc3-server send it); else whole, as Emscripten
@@ -1911,6 +1935,51 @@
   let discs = [];                 // {name, game, edition, path}
   const builds = {};              // game -> true/false (its <app>.js is there)
   let signIn = false;             // the deploy's disc server refused us (not signed in)
+  let localFiles;
+  async function initLocalFiles() {
+    $('local-files').hidden = false;
+    if (cfg.sourceUrl) {
+      $('pages-source-link').href = cfg.sourceUrl;
+      $('pages-source').hidden = false;
+    }
+    const status = $('local-files-status');
+    try {
+      const { openLocalFiles } = await import('./pages.js');
+      localFiles = await openLocalFiles();
+    } catch (e) {
+      status.textContent = e.message;
+    }
+    if (!localFiles) return;
+
+    let game, disc, discNumber = 0;
+    const picked = () => {
+      $('play').disabled = true;
+      for (const g of Object.keys(APPS)) builds[g] = g === game;
+      discs = game && disc ? [{ ...disc, game, path: new URL('disc', localFiles.root).href, local: true }] : [];
+      pickInit();
+    };
+    const build = $('local-build'), folder = $('local-disc');
+    build.disabled = folder.disabled = false;
+    build.onchange = () => {
+      if (!build.files.length) return;
+      try {
+        game = localFiles.setBuild(build.files, APPS);
+        status.textContent = `Build selected: ${GAME_NAMES[game]}.`;
+        picked();
+      } catch (e) { status.textContent = e.message; }
+      build.value = '';
+    };
+    folder.onchange = () => {
+      if (!folder.files.length) return;
+      try {
+        const { name, count } = localFiles.setDisc(folder.files);
+        disc = { name: `local-${++discNumber}`, label: name, count };
+        status.textContent = `Disc selected: ${name} (${count} files).`;
+        picked();
+      } catch (e) { status.textContent = e.message; }
+      folder.value = '';
+    };
+  }
   async function findDiscs() {
     if (cfg?.discUrl) {           // the deploy's one disc
       discs = [{ name: MC3DiscCache.discName(cfg.discUrl), game: BUILT_GAME || 'remix', edition: '', path: cfg.discUrl }];
@@ -1934,7 +2003,7 @@
       try { builds[g] = (await fetch(moduleFile(app + '.js'), { method: 'HEAD', cache: 'no-store', credentials: 'include', redirect: 'manual' })).ok; } catch { builds[g] = false; }
     }));
   }
-  const editionLabel = d => d.edition ? d.edition.toUpperCase() + ' (' + d.name + ')' : d.name;
+  const editionLabel = d => d.label || (d.edition ? d.edition.toUpperCase() + ' (' + d.name + ')' : d.name);
   const gameDiscs = g => discs.filter(d => d.game === g);
   function currentGame() { return document.querySelector('input[name=game]:checked')?.value || null; }
   function currentDisc() {
@@ -1969,6 +2038,7 @@
 
   let discFiles = {};             // disc name -> file count (or 0: no list)
   async function countDisc(d) {
+    if (d.local) return d.count;
     if (d.name in discFiles) return discFiles[d.name];
     try {
       // Not signed in, a sign-in gate (Cloudflare Access) answers 401/403 or a redirect to its login page.
@@ -2014,7 +2084,7 @@
     ul.textContent = '';
     // file list or mods/index.json still on its way
     if (!list && d && (!(d.name in discFiles) || discFiles[d.name] > 0)) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'Loading mods…'; ul.append(li); return; }
-    if (!list?.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'No mods on this server.'; ul.append(li); return; }
+    if (!list?.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = cfg?.localFiles ? 'No mods in the selected disc folder.' : 'No mods on this server.'; ul.append(li); return; }
     for (const m of list) {
       const li = document.createElement('li'), info = document.createElement('div'), b = document.createElement('b');
       const by = document.createElement('p'), p = document.createElement('p'), name = String(m.name || m.id);
@@ -2092,16 +2162,22 @@
     return rows;
   })();
 
+  let refreshID = 0;
   async function refresh() {
+    const id = ++refreshID;
     const g = currentGame(), d = currentDisc();
     const n = d ? await countDisc(d) : 0;
     if (!n) renderMods();   // no disc: the Mods tab stops saying loading
     else await modsLoad(d).catch(e => console.warn('[WEB] mods: ' + (e.message || e)));   // before Play is enabled: buildEnv needs the packs for MC3_MODS; a mods failure never blocks Play
     const device = await deviceChecks;
+    if (id !== refreshID) return;
+    const discHelp = cfg?.localFiles ? 'choose the build files and extracted disc folder above' : 'none on this server (--disc)';
+    const buildHelp = cfg?.localFiles ? 'choose the .js and .wasm files made by make web' : g ? `${APPS[g]}.js missing: make web GAME=${g}` : '–';
+    const threadsHelp = cfg?.localFiles ? 'the GitHub Pages service worker needs to enable threads' : 'COOP/COEP headers missing: serve with tools/web_serve.py';
     const checks = [
-      [n > 0, 'Disc', d ? (n ? `${editionLabel(d)}, ${n} files` : signIn ? `${d.name}: sign in first` : `${d.name}: its file list did not load`) : 'none on this server (--disc)'],
-      [!!(g && builds[g]), 'Build', g ? (builds[g] ? APPS[g] + '.js' : `${APPS[g]}.js missing: make web GAME=${g}`) : '–'],
-      [self.crossOriginIsolated, 'Threads', self.crossOriginIsolated ? 'cross-origin isolated' : 'COOP/COEP headers missing: serve with tools/web_serve.py'],
+      [n > 0, 'Disc', d ? (n ? `${editionLabel(d)}, ${n} files` : signIn ? `${d.name}: sign in first` : `${d.name}: its file list did not load`) : discHelp],
+      [!!(g && builds[g]), 'Build', buildHelp],
+      [self.crossOriginIsolated, 'Threads', threadsHelp],
       ...device,
       [opfs, 'Saves', opfs ? 'kept in this browser' : 'no private storage (needs https or localhost): saves last until the page closes'],
     ];
@@ -2120,12 +2196,16 @@
     $('play').disabled = !ready;
     const status = $('status');
     status.classList.toggle('bad', !ready);
-    if (ready) { status.textContent = 'Ready'; $('status-sub').textContent = `${GAME_NAMES[g]}. Press Play or Enter to start.`; }
+    if (ready) {
+      status.textContent = 'Ready';
+      $('status-sub').textContent = `${GAME_NAMES[g]}${d.local ? ' · ' + editionLabel(d) : ''}. Press Play or Enter to start.`;
+    }
     else if (signIn && !n && cfg?.keyed) {         // wrong password: asked again on the next load
       store.set('deployKey', '');
       status.textContent = 'Wrong password'; $('status-sub').textContent = 'Reload the page to type the test password again.';
     }
     else if (signIn && !n) { status.textContent = 'Sign in'; $('status-sub').textContent = 'The disc server did not let this browser in (or it is down).'; }
+    else if (cfg?.localFiles && !discs.length) { status.textContent = 'Select local files'; $('status-sub').textContent = 'The game will read the files directly from your device.'; }
     else if (!discs.length) { status.textContent = 'No disc'; $('status-sub').textContent = 'Serve your extracted disc: py tools/web_serve.py --root web --disc <folder>.'; }
     else if (!n) { status.textContent = 'No disc'; $('status-sub').textContent = 'The server has no readable disc for this game.'; }
     else if (!builds[g]) { status.textContent = 'Not built'; $('status-sub').textContent = `Build the ${GAME_NAMES[g]} for the browser: make web GAME=${g}, then serve its build folder too (--root work-${g}/build-web).`; }
@@ -2138,7 +2218,7 @@
   // --- disc cache (web/disc_cache.js): whether this browser keeps game files (no sizes), clearing it
   const discUrl = d => new URL(d.path, location.href).href;
   async function cacheShow() {
-    const d = currentDisc(), on = opfs && !!d && typeof MC3DiscCache == 'object';
+    const d = currentDisc(), on = opfs && !!d && !d.local && typeof MC3DiscCache == 'object';
     $('cache').hidden = !on;
     if (!on) return;
     if (!MC3DiscCache.enabled(buildEnv(null).MC3_DISC_CACHE)) {
@@ -2272,7 +2352,8 @@
   }
   async function writeBytes(d, n, bytes) {     // createWritable replaces the file only at close(): never half a file
     const w = await (await d.getFileHandle(n, { create: true })).createWritable();
-    await w.write(bytes); await w.close();
+    try { await w.write(bytes); await w.close(); }
+    catch (e) { await w.abort().catch(() => {}); throw e; }
   }
   async function readBytes(d, n) {
     try { return new Uint8Array(await (await (await d.getFileHandle(n)).getFile()).arrayBuffer()); } catch { return null; }
@@ -2421,25 +2502,46 @@
       li.append(info, row); ul.append(li);
     }
   }
+  async function saveArchive() {
+    const files = [], root = await navigator.storage.getDirectory();
+    for (const top of ['UDATA', 'TDATA', 'online', 'backup']) {
+      let d;
+      try { d = await root.getDirectoryHandle(top); }
+      catch (e) { if (e.name === 'NotFoundError') continue; throw e; }
+      await readTree(d, top + '/', files);
+    }
+    if (!files.length) throw new Error('No saves in this browser yet.');
+    return { blob: zipStore(files), count: files.length };
+  }
   async function exportAll() {
     if (!opfs) { savesMsg('No private storage in this browser here: nothing to export.', true); return; }
-    const files = [], root = await navigator.storage.getDirectory();
     try {
-      for (const top of ['UDATA', 'TDATA', 'online', 'backup']) {
-        let d;
-        try { d = await root.getDirectoryHandle(top); } catch { continue; }
-        await readTree(d, top + '/', files);
-      }
-    } catch (e) { savesMsg('Could not read the saves: ' + (e.message || e), true); return; }
-    if (!files.length) { savesMsg('No saves in this browser yet.', true); return; }
-    saveFile(zipStore(files), `mc3-saves-${new Date().toISOString().slice(0, 10)}.zip`);
-    savesMsg(`Exported ${files.length} files: profiles, online profile and their backup copies.`);
+      const { blob, count } = await saveArchive();
+      saveFile(blob, `mc3-saves-${new Date().toISOString().slice(0, 10)}.zip`);
+      savesMsg(`Exported ${count} save files and copies.`);
+    } catch (e) { savesMsg(e.message, true); }
+  }
+  async function backupToFolder() {
+    const button = $('saves-folder');
+    button.disabled = true;
+    try {
+      const parent = await showDirectoryPicker({ id: 'mc3-save-backup', mode: 'readwrite' });
+      const { blob } = await saveArchive();
+      const folder = await parent.getDirectoryHandle('mc3-saves-backup', { create: true });
+      const stamp = new Date().toISOString().replaceAll(':', '-');
+      const name = `mc3-saves-${stamp}-${crypto.randomUUID().slice(0, 8)}.zip`;
+      await writeBytes(folder, name, blob);
+      savesMsg(`Backup written to ${parent.name}/mc3-saves-backup/${name}.`);
+    } catch (e) {
+      if (e.name !== 'AbortError') savesMsg(`Could not write a backup. You can use Export all saves. ${e.message}`, true);
+    } finally { button.disabled = false; }
   }
   async function importSave(file) {
     if (/\.gsx$/i.test(file.name)) { savesMsg('Memory-unit images (.gsx) are not read here yet: run make import-save FILE=… or import the profile\'s .mc3.', true); return; }
     if (!opfs) { savesMsg('No private storage in this browser here: nowhere to put the save.', true); return; }
     const data = new Uint8Array(await file.arrayBuffer());
-    const remixFile = /\.mc3remix$/i.test(file.name), game = BUILT_GAME || 'remix';
+    const remixFile = /\.mc3remix$/i.test(file.name);
+    const game = cfg?.localFiles ? Object.keys(APPS).find(g => builds[g]) || (remixFile ? 'remix' : 'dub') : BUILT_GAME || 'remix';
     if (remixFile !== (game === 'remix')) { savesMsg(`${file.name}: a ${remixFile ? 'Remix (.mc3Remix)' : 'DUB Edition (.mc3)'} profile; this page runs the ${GAME_NAMES[game]}${game === 'remix' ? ' (.mc3Remix)' : ' (.mc3)'}.`, true); return; }
     if (remixFile) { await importRemix(file, data); return; }
     const stamp = data.length >= 4 ? new DataView(data.buffer).getUint32(0, true) : 0;
@@ -2622,7 +2724,7 @@
     if ($('cloud-dlg').open) cloudSides();
   }
   async function cloudInit() {
-    if (!cfg?.savesUrl || !window.MC3Cloud || !opfs) return;
+    if (!onlineEnabled() || !cfg?.savesUrl || !window.MC3Cloud || !opfs) return;
     const url = String(cfg.savesUrl).replace(/\/+$/, '') + '/v';
     const c = new MC3Cloud.Sync({
       url, read: cloudRead, apply: cloudApply,
@@ -2725,7 +2827,7 @@
     const b = $('boot-bar'); b.hidden = pct == null; if (pct != null) b.value = pct;
   }
   function bootStart() {
-    bootOn = true; $('boot-load').hidden = false; bootWhat('Downloading the game…');
+    bootOn = true; $('boot-load').hidden = false; bootWhat(localFiles ? 'Loading the build…' : 'Downloading the game…');
     const t = setInterval(() => {
       if (!(window.Module?.mc3Frames?.() > 0) || failBox) { if (failBox) clearInterval(t); return; }
       clearInterval(t); bootOn = false; $('boot-load').hidden = true;
@@ -3140,7 +3242,7 @@
   async function play() {
     if (playing || $('play').disabled) return;
     const nick = $('name').value.trim();
-    if (nickDefault(nick) || nick.toLowerCase() === nickTaken) { askNick(nickTaken && nick.toLowerCase() === nickTaken ? 'Nick already in use: pick another.' : ''); return; }
+    if (onlineEnabled() && (nickDefault(nick) || nick.toLowerCase() === nickTaken)) { askNick(nickTaken && nick.toLowerCase() === nickTaken ? 'Nick already in use: pick another.' : ''); return; }
     const g = currentGame(), d = currentDisc(), app = APPS[g];
     playing = true; tPlay = performance.now();
     keepTail();
@@ -3230,13 +3332,13 @@
       await pipeSeed(app);
       await webkitMemory();
       const s = document.createElement('script');
-      try { s.src = cfg?.moduleUrl ? await moduleBlob(app) : app + '.js'; }
+      try { s.src = !localFiles && cfg?.moduleUrl ? await moduleBlob(app) : moduleFile(app + '.js'); }
       catch (e) { runStatus(`Cannot load ${app}.js from ${cfg.moduleUrl}: ${e.message || e}`, true); return; }
       s.onerror = () => { out(`[WEB] module: ${app}.js did not load`); failShow('The game could not start', `Cannot load ${app}.js (build it: make web GAME=${g}).`); };
       s.onload = () => out(`[WEB] module: ${app}.js running`);
       document.body.append(s);
     };
-    if (typeof MC3DiscCache == 'object') MC3DiscCache.setForce(buildEnv(d).MC3_DISC_CACHE).catch(e => console.warn('[WEB] disc cache choice not kept:', e)).then(start);
+    if (typeof MC3DiscCache == 'object') MC3DiscCache.setForce(env.MC3_DISC_CACHE).catch(e => console.warn('[WEB] disc cache choice not kept:', e)).then(start);
     else start();
   }
   // Crash recovery (2026-11-10). Restart: a reload that skips the intro and presses Play (sessionStorage mc3.restart,
@@ -3279,7 +3381,7 @@
   }
   function resumeEnv() {
     if (!restart) return {};
-    const env = { MC3_SKIP_MOVIES: 'hard' }, r = restart.resume && resumeFresh();
+    const env = { MC3_SKIP_MOVIES: 'hard' }, r = onlineEnabled() && restart.resume && resumeFresh();
     if (restart.webgl) env.RECOMP_GPU = 'webgl';
     if (r) Object.assign(env, { MC3_AUTOSTART: 'freeroam:' + RESUME_CITIES[r.city], MC3_RESUME_ROAM: [r.city, ...r.m].join(',') });
     out('[WEB] restart: ' + Object.entries(env).map(([k, v]) => k + '=' + v).join(' '));
@@ -3432,7 +3534,7 @@
     if (lan?.roaming) { if (w === 'career') lan.career = true; else if (w === 'arcade') lan.career = false; }
   }, 2000);
   function lanUp() {
-    if (typeof mc3Lan !== 'function') {
+    if (!onlineEnabled() || typeof mc3Lan !== 'function') {
       lan?.close(); lan = null; $('lan-status').textContent = '';
       racesShow(null);
       return null;
@@ -3463,6 +3565,7 @@
   function roamP2P() { return new URLSearchParams(location.search).get('MC3_ROAM_P2P') !== '0'; }
   $('saves-refresh').onclick = () => { savesMsg(''); listSaves(); listSnaps(); };
   $('saves-export').onclick = exportAll;
+  $('saves-folder').onclick = backupToFolder;
   $('oprof-export').onclick = oprofExport;
   $('oprof-import').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) oprofImport(f); };
   $('import').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) importSave(f); };
@@ -3862,6 +3965,7 @@
   // (offline, or a switch without the push: web/server) the server's GET /lan/stats (counts only), every 60 s while the start page is visible (backing off to 5 min while unchanged)
   const CITIES = ['San Diego', 'Atlanta', 'Detroit', 'Tokyo'];   // free-roam room ids 0..3 (0 = the default room)
   function statsUrl() {
+    if (!onlineEnabled()) return null;
     try {
       const u = new URL(cfg?.lanUrl || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/lan`, location.href);
       u.protocol = u.protocol === 'wss:' ? 'https:' : 'http:';
@@ -3985,11 +4089,25 @@
     e.preventDefault(); play();
   });
   addEventListener('error', e => out('[page] ' + e.message));
-  initTabs();
   preview();
-  loadConfig().then(() => { sendPreviousCrash(); lanUp(); showOnline(); cloudInit().catch(e => out('[cloud] ' + (e.message || e))); if (nickDefault($('name').value.trim())) askNick(); return Promise.all([findDiscs(), findBuilds()]); }).then(pickInit)
+  loadConfig().then(async () => {
+    if (!onlineEnabled()) {
+      for (const el of document.querySelectorAll('[data-server-only]')) el.hidden = true;
+      $('resume-btn').hidden = true;
+      $('save-msg').textContent = 'Save your career progress in this browser.';
+      $('saves-folder').hidden = $('saves-folder-help').hidden = !opfs || !('showDirectoryPicker' in window);
+      preview();
+    }
+    initTabs();
+    sendPreviousCrash(); lanUp(); showOnline();
+    cloudInit().catch(e => out('[cloud] ' + (e.message || e)));
+    if (onlineEnabled() && nickDefault($('name').value.trim())) askNick();
+    if (cfg?.localFiles) await initLocalFiles();
+    else await Promise.all([findDiscs(), findBuilds()]);
+    pickInit();
+  })
     .then(() => {   // a restart (restartGame): Play once the disc and build checks enable it
-      if (!restart) return;
+      if (!restart || cfg?.localFiles) return;
       const t0 = Date.now(), go = () => !$('play').disabled ? play() : Date.now() - t0 < 60000 && setTimeout(go, 250);
       go();
     });
